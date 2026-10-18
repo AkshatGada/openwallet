@@ -1,0 +1,99 @@
+LATEST STATUS — 2026-10-18
+User subsequently authorized commit and push to the fork.
+Commit: 1e02d8d92506ade715af4952f91f4889bc543286
+Remote branch: AkshatGada/openwallet codex/spending-accounting-unavailable
+Push succeeded; remote SHA verified. Worktree clean. Six-file diff matches reviewed hash.
+Repository pre-commit formatting/clippy/locked metadata checks passed immediately before commit.
+No PR created. Earlier uncommitted/no-push statements below describe the prior review stage and are superseded by this status.
+
+Open Wallet Standard #254 — independent review, compatibility, and local PR preparation
+Date: 2026-10-18 (Asia/Kolkata)
+Existing chat: 01a14eef-d224-7412-911d-cec986702a2c
+Exact configured model: unverified; no supported runtime model identifier exposed.
+Repository: <original-checkout>
+Branch: codex/spending-accounting-unavailable
+Base/current verified upstream main: ade81d535731ad30986969a8eba8dd8ebf8609bd
+Status: six modified tracked files, uncommitted. PR title/body prepared as local text artifacts. Publication is NOT authorized. No push, PR creation, CLA, outreach, live payments, production or Excel changes.
+Reviewed source diff SHA-256: cbf24fa81f474161ee403f503c2fe60a79454e625069c5f05457fa894d4f895b
+
+OUTCOME
+Independent read-only reviewer /root/ows_independent_review found no actionable source correctness/security defect. No source fixes or scope changes were needed. A follow-up review caught a PR-text overstatement about concurrency: eight total requests were tested in two batches of four, not eight at once. The draft and helper output wording were corrected. All original user/source changes were preserved. The current six-file diff is byte-identical to the independently reviewed patch.
+
+REPOSITORY AND SCOPE
+Five Rust workspace crates: core types/config; signer chain contexts/crypto; library vault/API-key/policy operations; payment/funding helpers; CLI. Separate Node NAPI and Python PyO3 bindings and JS adapters. In token mode, attached policies run before secret decryption; sign_and_send shares that gate and broadcasts afterward. Owner-passphrase operations bypass policies by design.
+Source licenses inspected are MIT. CONTRIBUTING requires focused branches, tests/clippy/formatting and documentation for public API changes. No applicable AGENTS.md was found in the repository or ancestor paths. No CLA/DCO requirement was found in the inspected contribution/workflow/hook files; no agreement was accepted. CODEOWNERS names @njdawn; public profile identifies Neeraj Prasad. Public collaboration by @0xultravioleta was verified from reviews and merged release commits; no additional identities or contacts were inferred.
+Only handwritten Rust and source docs changed. Generated outputs, package versions, binding source, all four repository lockfiles, and dependencies are unchanged. Native builds and package installs took place only in temporary snapshots/caches.
+
+CURRENT UPSTREAM / OVERLAP (rechecked after compatibility gates)
+- main remains ade81d535731ad30986969a8eba8dd8ebf8609bd.
+- #254 open, one comment, last updated 2026-10-08T12:12:18Z: https://github.com/open-wallet-standard/core/issues/254
+- #169 open/unmerged, head 0596edb8a7e2f23206636e60dcbd6f782c8770ed: https://github.com/open-wallet-standard/core/pull/169
+- #225 open/unmerged, head e2431350063c08a3cc2b4cc2d65efd7ffcdd62ec: https://github.com/open-wallet-standard/core/pull/225
+The policy discussions converge on #225 for recipient rules, with the per-transaction value cap/operation gating from #169 as a follow-up; they explicitly distinguish cumulative #254. They touch some of the same files, so future rebases may conflict, but neither supplies cumulative accounting or the explicit unavailable contract. Earlier open-PR/search/timeline inspection found no direct competing implementation; unpublished work is not knowable. #250 addresses Midnight transaction effects, not a settled cumulative ledger.
+The historical issue report was at v1.4.2 / b3fd7f9. This work independently reproduced the placeholder on ade81d5 rather than treating that historical report as current proof. Corroboration: https://github.com/open-wallet-standard/core/issues/254#issuecomment-6059578452 .
+
+LOCAL DESIGN
+Replace fabricated production daily_total="0" with explicit JSON null using SpendingContext::unavailable(date). Rust daily_total becomes Option<String>. Missing totals deserialize as None. Legacy decimal strings roundtrip without numeric truncation, but that does not certify them as accounting. Keep date as signing-request UTC date, not a freshness/window signal. Update policy spec, practical guide and Cardano reference; include explicit deny-on-unavailable migration guidance.
+Added five tests: null roundtrip; missing total; legacy string/large-string fidelity with numeric rejection; captured contexts across repeated transaction plus message/hash/typed-data signing; denial before decryption and broadcast across all entry points. Synthetic fixtures only. Repeated signatures do not prove any cumulative financial spend, submission or settlement.
+
+INDEPENDENT REVIEW
+Canonical identity: /root/ows_independent_review. Admission was confirmed after the reviewer directly inspected the actual diff/types/context builder/tests/docs. The reviewer read signing/broadcast paths and independently ran the documented guard, Python/Node coercion cases and diff whitespace checks. No source defect was found. The breaking type/JSON change and arbitrary-executable limitation were explicitly retained as review gates. The reviewer did not independently compile Rust or bindings; the implementing agent ran the compatibility gates below. No maintainer approval is claimed.
+Full report: <original-validation-root>/independent-review.txt
+
+COMPATIBILITY RESULTS
+                              macOS ARM64                 Linux ARM64 (network disabled)
+Rust                          1.94.0                      1.94.0
+Node                          22.23.3                     22.23.3
+Python                        3.12.12                     3.12.15
+Rust workspace                724 passed / 0 failed       724 passed / 0 failed
+Ignored                       4 live tests + 2 doctests   4 live tests + 2 doctests
+Node binding tests            22 passed / 0 failed        22 passed / 0 failed
+Python binding tests          17 passed / 0 failed        17 passed / 0 failed
+Clippy -D warnings            passed                      passed
+Formatting                    passed                      passed
+Locked Cargo metadata         all 3 manifests passed      all 3 manifests passed
+Generated README check        passed                      passed
+Native Linux ARM64 release                                passed
+
+Rust commands: cargo test --workspace --locked --offline; cargo clippy --workspace --locked --offline -- -D warnings; cargo fmt --all -- --check. Binding metadata used cargo metadata --locked --offline --format-version 1. Node npm test rebuilt the addon with fast-kdf. Python used maturin develop --features fast-kdf --locked --offline then python -m pytest -q. Maturin 1.15.0 and pytest 9.1.1 were used. The Node NAPI CLI was 2.18.4.
+macOS exact toolchain, runtimes and caches were installed in /private/tmp; no system tool defaults or shell configuration were changed. The Python installer's task-created convenience symlink was removed, leaving only temporary runtime paths. Linux used task-owned official Rust/Node/Python-based container image openwallet-compat-194:local, ID sha256:870cd699ba232935ba012b564e88a528a08609700f2be3a390e8c8d473b0b184. All test containers used --rm and --network none; fixtures and mock RPC were local. Existing containers and other projects were not modified.
+
+CROSS-BUILD / ARTIFACT CHECK
+Passed from macOS with exact Rust 1.94.0, cargo-zigbuild 0.23.4, Zig 0.13.0:
+napi build --platform --release --target aarch64-unknown-linux-gnu --zig --zig-abi-suffix 2.17
+The CC wrapper preserved quoted arguments and selected aarch64-linux-gnu.2.17 as in CI. Rust dependencies were offline, and all Zig caches were task-local. Artifact is an ELF ARM64 shared object. Linux readelf found maximum GLIBC_2.17, and Linux Node 22 loaded this exact cross-built addon and passed the supplemental availability/concurrency check.
+Artifact SHA-256: ed309a9049daaedc3020c6e37315366b83886539b99ef846875ecb5a5df11df7
+This verifies the target and cross-build flags locally; the actual GitHub Actions Ubuntu x86_64 host has not run this diff. It is not a claim of upstream CI success.
+
+MIGRATION AND CONCURRENCY CHECKS
+Both native language bindings validated explicit null and denied all four signing operations through a policy requiring accounting. Each platform/language probe performed eight allowed offline message signatures and eight denials in fresh processes, four concurrent processes per batch. The cross-built addon also passed that probe in Linux. These checks establish consistent unavailable context across fresh/concurrent callers, not a ledger race/reservation guarantee.
+A Rust consumer check confirms modern Option handling, old String-schema rejection of null, and legacy string deserialization. An old-source construction assigning String produced expected compile error E0308, proving the public source break. Python int(None) and JS BigInt(null) throw; Number(null), JS value||"0", and Python value or "0" can coerce absence to zero. The exact documented Python guard denied five unavailable/missing/malformed-container cases. It is only an availability guard; nonnull legacy/malformed values do not become trustworthy.
+The earlier Rust 1.94.1 baseline passed 719 tests; the new regression failed against its original constructor with Some(String("0")) versus Some(Null). The changed suite was then fully run on exact 1.94.0 on both platforms.
+
+SETUP / TRANSIENT RESULTS
+- Initial offline baseline lacked aes-gcm; locked dependencies were fetched into an isolated temporary cache before offline validation.
+- Initial sandboxed mock-server tests could not bind loopback (Operation not permitted). Authorized loopback-capable runs passed.
+- npm ci rejects pre-existing incomplete optional-package entries in the repository lockfile. Node validation used npm install as repository CI does, in a temporary snapshot; all original repository lockfiles still match HEAD. Linux reused the same pure-JS NAPI CLI package.
+- One supplemental macOS Node policy invocation timed out after 5 seconds and denied. An unchanged retry passed. A later diagnostic also passed. No cause was established; no timeout or unrelated source behavior was changed.
+- Container package/tool downloads were slow; test tools were supplied from downloaded local wheels. Final Linux tests ran without network. A cross-tool version-reporting invocation was corrected before the real build started.
+
+REMAINING LIMITATIONS / REVIEW GATES
+1. This mitigates misleading accounting input, not cumulative-limit enforcement. #254 remains open and is only partially addressed.
+2. Rust and JSON compatibility are intentionally breaking; maintainers must agree release/migration treatment before merge/publication. No version bump was made locally.
+3. Arbitrary existing scripts may coerce null/missing values to zero and allow. They need auditing; the engine cannot infer ledger requirements from executable code.
+4. No accounting provider, reservations, persistence, settlement reconciliation, freshness guarantee, atomic budget enforcement, or cross-key/window semantics was implemented or tested. A future design needs per-chain/per-asset units, scope, durable atomic reservations and restart/reorg/failure recovery, trusted freshness and explicit windows, plus privacy boundaries. A signature or returned transaction hash is not settled spend.
+5. Local macOS/Linux ARM64 and the cross-target checks passed. Actual upstream Ubuntu x86_64 CI and maintainer approval remain unverified. No production outcome, live settlement or fund-loss reproduction is claimed.
+
+LOCAL PR PREPARATION
+Title: fix(policy)!: represent unavailable spending accounting explicitly
+Body: <original-validation-root>/pr-body.txt
+Title file: <original-validation-root>/pr-title.txt
+Patch: <original-validation-root>/reviewed.patch
+Result manifest: <original-validation-root>/results.json
+This is reviewable local PR preparation only. Nothing was committed, pushed or published.
+
+EVIDENCE DIRECTORY
+<original-validation-root>
+Key logs: rust194-tests.log, rust194-clippy.log, rust194-fmt.log, node-tests.log, python-build.log, python-tests.log, node-spending-retry.log, python-spending.log, rust-consumer.log, rust-legacy-source.log; linux-rust-tests.log, linux-clippy.log, linux-fmt.log, linux-readme.log, linux-node-tests.log, linux-node-spending.log, linux-node-release.log, linux-python-build.log, linux-python-tests.log, linux-python-spending.log, linux-complete.txt; node-cross-build.log, cross-versions.log, cross-addon-linux-load.log.
+Reproduction helpers: test-linux.sh, Dockerfile, checks/node-spending.mjs, checks/python-spending.py, rust-consumer/.
+Historical first-pass report preserved at /private/tmp/openwallet-254-initial-report.txt.

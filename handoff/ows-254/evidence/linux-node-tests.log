@@ -1,0 +1,380 @@
+
+> @open-wallet-standard/core@1.4.3 test
+> napi build --platform --features fast-kdf && node --test __test__/index.spec.mjs
+
+   Compiling libc v0.2.183
+   Compiling serde_core v1.0.228
+   Compiling typenum v1.19.0
+   Compiling zerofrom v0.1.6
+   Compiling yoke v0.8.1
+   Compiling futures-util v0.3.32
+   Compiling radium v0.7.0
+   Compiling bitvec v1.0.1
+   Compiling getrandom v0.2.17
+   Compiling rand_core v0.6.4
+   Compiling cpufeatures v0.2.17
+   Compiling serde v1.0.228
+   Compiling rand_chacha v0.3.1
+   Compiling zeroize v1.8.2
+   Compiling rand v0.8.5
+   Compiling generic-array v0.14.7
+   Compiling socket2 v0.6.3
+   Compiling mio v1.2.0
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling zerovec v0.11.5
+   Compiling digest v0.10.7
+   Compiling tokio v1.50.0
+   Compiling sha2 v0.10.9
+   Compiling tracing v0.1.44
+   Compiling ff v0.13.1
+   Compiling rand_xorshift v0.3.0
+   Compiling zmij v1.0.21
+   Compiling tinystr v0.8.2
+   Compiling group v0.13.0
+   Compiling icu_locale_core v2.1.1
+   Compiling serde_json v1.0.149
+   Compiling zerotrie v0.2.3
+   Compiling potential_utf v0.1.4
+   Compiling icu_collections v2.1.1
+   Compiling icu_provider v2.1.1
+   Compiling indexmap v2.13.0
+   Compiling icu_normalizer_data v2.1.1
+   Compiling hmac v0.12.1
+   Compiling der v0.7.10
+   Compiling rustls-pki-types v1.14.1
+   Compiling hex v0.4.3
+   Compiling icu_normalizer v2.1.1
+   Compiling icu_properties v2.1.2
+   Compiling crossbeam-utils v0.8.22
+   Compiling httparse v1.10.1
+   Compiling tokio-util v0.7.18
+   Compiling signature v2.2.0
+   Compiling serdect v0.2.0
+   Compiling ring v0.17.14
+   Compiling crossbeam-epoch v0.9.20
+   Compiling h2 v0.4.13
+   Compiling idna_adapter v1.2.1
+   Compiling spki v0.7.3
+   Compiling crypto-bigint v0.5.5
+   Compiling rustls v0.23.40
+   Compiling idna v1.1.0
+   Compiling rustls-webpki v0.103.13
+   Compiling pkcs8 v0.10.2
+   Compiling crossbeam-deque v0.8.7
+   Compiling hyper v1.8.1
+   Compiling sec1 v0.7.3
+   Compiling tower v0.5.3
+   Compiling num_cpus v1.17.0
+   Compiling threadpool v1.8.1
+   Compiling elliptic-curve v0.13.8
+   Compiling hyper-util v0.1.20
+   Compiling rayon-core v1.13.0
+   Compiling url v2.5.8
+   Compiling rfc6979 v0.4.0
+   Compiling darling_core v0.20.11
+   Compiling rustls-native-certs v0.8.4
+   Compiling getrandom v0.3.4
+   Compiling ecdsa v0.16.9
+   Compiling rayon v1.12.0
+   Compiling blst v0.3.16
+   Compiling darling_macro v0.20.11
+   Compiling tokio-rustls v0.26.4
+   Compiling anyhow v1.0.102
+   Compiling webpki-roots v1.0.7
+   Compiling pairing v0.23.0
+   Compiling serde_arrays v0.2.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling midnight-curves v0.2.1
+   Compiling hyper-rustls v0.27.9
+   Compiling k256 v0.13.4
+   Compiling darling v0.20.11
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.12.28
+   Compiling nix v0.29.0
+   Compiling midnight-proofs v0.7.2
+   Compiling dummy v0.8.0
+   Compiling crc32fast v1.5.0
+   Compiling crypto v0.5.1
+   Compiling futures-executor v0.3.32
+   Compiling serde_bytes v0.11.19
+   Compiling rustix v1.1.4
+   Compiling fake v2.10.0
+   Compiling midnight-serialize v1.1.0
+   Compiling futures v0.3.32
+   Compiling flate2 v1.1.9
+   Compiling atomic-write-file v0.2.3
+   Compiling parking_lot_core v0.9.12
+   Compiling midnight-base-crypto v1.0.0
+   Compiling tempfile v3.27.0
+   Compiling parking_lot v0.12.5
+   Compiling sha3-circuit v0.1.0
+   Compiling blake2b_halo2 v0.1.0
+   Compiling sysinfo v0.34.2
+   Compiling inout v0.1.4
+   Compiling cipher v0.4.4
+   Compiling midnight-storage-core v1.2.0
+   Compiling secp256k1-sys v0.10.1
+   Compiling bitcoin-io v0.1.4
+   Compiling bs58 v0.5.1
+   Compiling midnight-circuits v6.2.1
+   Compiling ripemd v0.1.3
+   Compiling midnight-storage v2.0.1
+   Compiling keccak v0.1.6
+   Compiling password-hash v0.5.0
+   Compiling thiserror v1.0.69
+   Compiling sha3 v0.10.8
+   Compiling bitcoin_hashes v0.14.1
+   Compiling ahash v0.8.12
+   Compiling bitcoin-internals v0.3.0
+   Compiling universal-hash v0.5.1
+   Compiling regex-syntax v0.8.10
+   Compiling memchr v2.8.0
+   Compiling aho-corasick v1.1.4
+   Compiling regex-automata v0.4.14
+   Compiling chrono v0.4.44
+   Compiling midnight-zk-stdlib v1.2.1
+   Compiling embedded-io-async v0.6.1
+   Compiling coins-core v0.11.1
+   Compiling polyval v0.6.2
+   Compiling hashbrown v0.14.5
+   Compiling curve25519-dalek v4.1.3
+   Compiling pbkdf2 v0.12.2
+   Compiling heapless v0.8.0
+   Compiling ed25519 v2.2.3
+   Compiling midnight-transient-crypto v2.1.0
+   Compiling digest v0.9.0
+   Compiling block-buffer v0.9.0
+   Compiling errno v0.3.14
+   Compiling indexmap v1.9.3
+   Compiling axum-core v0.4.5
+   Compiling midnight-coin-structure v2.0.1
+   Compiling schemars v0.8.22
+   Compiling embassy-sync v0.6.2
+   Compiling midnight-onchain-state v3.0.0
+   Compiling hashbrown v0.15.5
+   Compiling midnight-onchain-vm v3.1.0
+   Compiling rand_os v0.1.3
+   Compiling thiserror v2.0.18
+   Compiling pin-project v1.1.11
+   Compiling signal-hook-registry v1.4.8
+   Compiling sha2 v0.9.9
+   Compiling ed25519-dalek v2.2.0
+   Compiling thiserror-no-std v2.0.2
+   Compiling bigdecimal v0.4.10
+   Compiling hashlink v0.9.1
+   Compiling serde_with v3.18.0
+   Compiling coins-bip32 v0.11.1
+   Compiling midnight-onchain-runtime v3.1.0
+   Compiling ghash v0.5.1
+   Compiling clear_on_drop v0.2.5
+   Compiling rust_decimal v1.41.0
+   Compiling hex_lit v0.1.1
+   Compiling regex v1.12.3
+   Compiling midnight-zswap v8.1.0
+   Compiling secp256k1 v0.29.1
+   Compiling base58ck v0.1.0
+   Compiling bitcoin-units v0.1.2
+   Compiling secp256k1 v0.30.0
+   Compiling salsa20 v0.10.2
+   Compiling aes v0.8.4
+   Compiling ctr v0.9.2
+   Compiling prost-derive v0.13.5
+   Compiling uuid v1.16.0
+   Compiling aead v0.5.2
+   Compiling rand_hc v0.3.2
+   Compiling unicode-segmentation v1.13.2
+   Compiling xrpl-rust v1.1.0
+   Compiling convert_case v0.6.0
+   Compiling midnight-ledger v8.1.0
+   Compiling prost v0.13.5
+   Compiling cardano-serialization-lib v15.0.3
+   Compiling bitcoin v0.32.8
+   Compiling axum v0.7.9
+   Compiling async-stream v0.3.6
+   Compiling ows-core v1.4.3 (/work/ows/crates/ows-core)
+   Compiling aes-gcm v0.10.3
+   Compiling scrypt v0.11.0
+   Compiling coins-bip39 v0.11.1
+   Compiling signal-hook v0.4.3
+   Compiling tower v0.4.13
+   Compiling hyper-timeout v0.5.2
+   Compiling tokio-stream v0.1.18
+   Compiling hkdf v0.12.4
+   Compiling blake2 v0.10.6
+   Compiling socket2 v0.5.10
+   Compiling napi-build v2.3.1
+   Compiling tonic v0.12.3
+   Compiling ows-node v1.4.3 (/work/bindings/node)
+   Compiling napi-derive-backend v1.0.75
+   Compiling ctor v0.2.9
+   Compiling napi-sys v2.4.0
+   Compiling napi v2.16.17
+   Compiling napi-derive v2.16.13
+   Compiling ows-signer v1.4.3 (/work/ows/crates/ows-signer)
+   Compiling ows-lib v1.4.3 (/work/ows/crates/ows-lib)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 38.05s
+TAP version 13
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+# Subtest: @open-wallet-standard/core
+    # Subtest: generates a 12-word mnemonic
+    ok 1 - generates a 12-word mnemonic
+      ---
+      duration_ms: 4.438625
+      type: 'test'
+      ...
+    # Subtest: generates a 24-word mnemonic
+    ok 2 - generates a 24-word mnemonic
+      ---
+      duration_ms: 0.584291
+      type: 'test'
+      ...
+    # Subtest: derives addresses for all chains
+    ok 3 - derives addresses for all chains
+      ---
+      duration_ms: 431.836958
+      type: 'test'
+      ...
+    # Subtest: creates a universal wallet with 16 accounts
+    ok 4 - creates a universal wallet with 16 accounts
+      ---
+      duration_ms: 1070.613667
+      type: 'test'
+      ...
+    # Subtest: imports a mnemonic and produces same addresses
+    ok 5 - imports a mnemonic and produces same addresses
+      ---
+      duration_ms: 1030.688542
+      type: 'test'
+      ...
+    # Subtest: imports a secp256k1 private key with all 15 accounts
+    ok 6 - imports a secp256k1 private key with all 15 accounts
+      ---
+      duration_ms: 396.368875
+      type: 'test'
+      ...
+    # Subtest: imports an ed25519 private key with all 15 accounts
+    ok 7 - imports an ed25519 private key with all 15 accounts
+      ---
+      duration_ms: 387.723916
+      type: 'test'
+      ...
+    # Subtest: imports an ed25519-bip32 private key with all 15 accounts
+    ok 8 - imports an ed25519-bip32 private key with all 15 accounts
+      ---
+      duration_ms: 480.214792
+      type: 'test'
+      ...
+    # Subtest: imports all curve keys explicitly
+    ok 9 - imports all curve keys explicitly
+      ---
+      duration_ms: 490.374083
+      type: 'test'
+      ...
+    # Subtest: signs messages on all chains
+    ok 10 - signs messages on all chains
+      ---
+      duration_ms: 2013.434584
+      type: 'test'
+      ...
+    # Subtest: signs transactions on all chains
+    ok 11 - signs transactions on all chains
+      ---
+      duration_ms: 2590.008293
+      type: 'test'
+      ...
+    # Subtest: signs raw hashes and EIP-7702 authorizations in owner mode
+    ok 12 - signs raw hashes and EIP-7702 authorizations in owner mode
+      ---
+      duration_ms: 308.245667
+      type: 'test'
+      ...
+    # Subtest: produces deterministic signatures
+    ok 13 - produces deterministic signatures
+      ---
+      duration_ms: 1212.65825
+      type: 'test'
+      ...
+    # Subtest: rejects duplicate wallet names
+    ok 14 - rejects duplicate wallet names
+      ---
+      duration_ms: 975.514251
+      type: 'test'
+      ...
+    # Subtest: rejects non-existent wallet
+    ok 15 - rejects non-existent wallet
+      ---
+      duration_ms: 0.493708
+      type: 'test'
+      ...
+    # Subtest: rejects invalid private key hex
+    ok 16 - rejects invalid private key hex
+      ---
+      duration_ms: 0.063333
+      type: 'test'
+      ...
+    # Subtest: creates a policy, API key by wallet name, and signs with the token
+    ok 17 - creates a policy, API key by wallet name, and signs with the token
+      ---
+      duration_ms: 1203.589334
+      type: 'test'
+      ...
+    # Subtest: signs with an API key for a wallet imported from a private key
+    ok 18 - signs with an API key for a wallet imported from a private key
+      ---
+      duration_ms: 203.656917
+      type: 'test'
+      ...
+    # Subtest: signs EIP-712 typed data with an API key token
+    ok 19 - signs EIP-712 typed data with an API key token
+      ---
+      duration_ms: 1141.854042
+      type: 'test'
+      ...
+    # Subtest: enforces AllowedTypedDataContracts through the node binding
+    ok 20 - enforces AllowedTypedDataContracts through the node binding
+      ---
+      duration_ms: 1066.780001
+      type: 'test'
+      ...
+    # Subtest: executable policy gates signing
+    ok 21 - executable policy gates signing
+      ---
+      duration_ms: 1094.241209
+      type: 'test'
+      ...
+    # Subtest: signs raw hashes and authorizations through the API-key path
+    ok 22 - signs raw hashes and authorizations through the API-key path
+      ---
+      duration_ms: 1074.734917
+      type: 'test'
+      ...
+    1..22
+ok 1 - @open-wallet-standard/core
+  ---
+  duration_ms: 17180.454008
+  type: 'suite'
+  ...
+1..1
+# tests 22
+# suites 1
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17243.766383

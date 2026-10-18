@@ -1,0 +1,24 @@
+{
+  "source_diff_sha256": "cbf24fa81f474161ee403f503c2fe60a79454e625069c5f05457fa894d4f895b",
+  "rust": {
+    "macos_arm64": {
+      "passed": 724,
+      "failed": 0,
+      "ignored": 6
+    },
+    "linux_arm64": {
+      "passed": 724,
+      "failed": 0,
+      "ignored": 6
+    }
+  },
+  "node_each_platform": {
+    "passed": 22,
+    "failed": 0
+  },
+  "python_each_platform": {
+    "passed": 17,
+    "failed": 0
+  },
+  "cross_build": "passed; maximum GLIBC_2.17; loaded and probed in Linux"
+}

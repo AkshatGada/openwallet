@@ -1,0 +1,68 @@
+    Checking futures-sink v0.3.32
+    Checking zeroize v1.8.2
+    Checking libc v0.2.183
+    Checking slab v0.4.12
+    Checking serde_core v1.0.228
+    Checking tracing-core v0.1.36
+    Checking subtle v2.6.1
+    Checking zerofrom v0.1.6
+    Checking bitflags v2.11.0
+    Checking num-traits v0.2.19
+    Checking log v0.4.29
+    Checking thiserror v2.0.18
+    Checking hex v0.4.3
+    Checking futures-channel v0.3.32
+    Checking rustls-pki-types v1.14.1
+    Checking yoke v0.8.1
+    Checking futures-util v0.3.32
+    Checking zerovec v0.11.5
+    Checking zerotrie v0.2.3
+    Checking tracing v0.1.44
+    Checking webpki-roots v1.0.7
+    Checking mio v1.2.0
+    Checking socket2 v0.6.3
+    Checking getrandom v0.2.17
+    Checking getrandom v0.3.4
+    Checking tinystr v0.8.2
+    Checking potential_utf v0.1.4
+    Checking uuid v1.16.0
+    Checking ring v0.17.14
+    Checking icu_collections v2.1.1
+    Checking icu_locale_core v2.1.1
+    Checking tokio v1.50.0
+    Checking icu_provider v2.1.1
+    Checking icu_properties v2.1.2
+    Checking icu_normalizer v2.1.1
+    Checking rustls-webpki v0.103.13
+    Checking serde v1.0.228
+    Checking serde_json v1.0.149
+    Checking rustls v0.23.40
+    Checking serde_urlencoded v0.7.1
+    Checking chrono v0.4.44
+    Checking idna_adapter v1.2.1
+    Checking idna v1.1.0
+    Checking url v2.5.8
+    Checking hyper v1.8.1
+    Checking tower v0.5.3
+    Checking tower-http v0.6.11
+    Checking hyper-util v0.1.20
+    Checking tokio-rustls v0.26.4
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking ows-core v1.4.3 (<original-validation-root>/snapshot/ows/crates/ows-core)
+    Checking ows-consumer-compatibility v0.0.0 (<original-validation-root>/rust-consumer)
+error[E0308]: mismatched types
+ --> legacy-source.rs:5:22
+  |
+5 |         daily_total: "0".to_string(),
+  |                      ^^^^^^^^^^^^^^^ expected `Option<String>`, found `String`
+  |
+  = note: expected enum `Option<String>`
+           found struct `String`
+help: try wrapping the expression in `Some`
+  |
+5 |         daily_total: Some("0".to_string()),
+  |                      +++++               +
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `ows-consumer-compatibility` (bin "legacy-source") due to 1 previous error

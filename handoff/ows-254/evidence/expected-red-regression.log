@@ -1,0 +1,59 @@
+   Compiling tokio v1.50.0
+   Compiling strsim v0.11.1
+   Compiling darling_core v0.23.0
+   Compiling darling_macro v0.23.0
+   Compiling darling v0.23.0
+   Compiling tokio-util v0.7.18
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.4
+   Compiling tokio-stream v0.1.18
+   Compiling serde_with_macros v3.18.0
+   Compiling tower-http v0.6.11
+   Compiling axum v0.7.9
+   Compiling h2 v0.4.13
+   Compiling tower v0.4.13
+   Compiling serde_with v3.18.0
+   Compiling hyper v1.8.1
+   Compiling xrpl-rust v1.1.0
+   Compiling hyper-util v0.1.20
+   Compiling hyper-rustls v0.27.7
+   Compiling hyper-timeout v0.5.2
+   Compiling mockito v1.7.2
+   Compiling tonic v0.12.3
+   Compiling reqwest v0.12.28
+   Compiling midnight-base-crypto v1.0.0
+   Compiling ows-core v1.4.3 (<original-checkout>/ows/crates/ows-core)
+   Compiling midnight-storage-core v1.2.0
+   Compiling midnight-transient-crypto v2.1.0
+   Compiling midnight-storage v2.0.1
+   Compiling midnight-coin-structure v2.0.1
+   Compiling midnight-onchain-state v3.0.0
+   Compiling midnight-onchain-vm v3.1.0
+   Compiling midnight-onchain-runtime v3.1.0
+   Compiling midnight-zswap v8.1.0
+   Compiling midnight-ledger v8.1.0
+   Compiling ows-signer v1.4.3 (<original-checkout>/ows/crates/ows-signer)
+   Compiling ows-lib v1.4.3 (<original-checkout>/ows/crates/ows-lib)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.55s
+     Running unittests src/lib.rs (<original-first-pass-target>/debug/deps/ows_lib-3474f625c9126a8c)
+
+running 1 test
+test key_ops::tests::api_key_signing_exposes_unavailable_spending ... FAILED
+
+failures:
+
+---- key_ops::tests::api_key_signing_exposes_unavailable_spending stdout ----
+
+thread 'key_ops::tests::api_key_signing_exposes_unavailable_spending' (29823530) panicked at crates/ows-lib/src/key_ops.rs:536:13:
+assertion `left == right` failed
+  left: Some(String("0"))
+ right: Some(Null)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    key_ops::tests::api_key_signing_exposes_unavailable_spending
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 174 filtered out; finished in 0.92s
+
+error: test failed, to rerun pass `-p ows-lib --lib`

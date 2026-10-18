@@ -1,0 +1,26 @@
+{
+  "checked_on": "2026-10-18",
+  "fork": "https://github.com/AkshatGada/openwallet",
+  "upstream": "https://github.com/open-wallet-standard/core",
+  "code_branch": "codex/spending-accounting-unavailable",
+  "code_commit": "1e02d8d92506ade715af4952f91f4889bc543286",
+  "base_upstream_main": "ade81d535731ad30986969a8eba8dd8ebf8609bd",
+  "handoff_branch": "codex/ows-254-handoff",
+  "source_diff_sha256": "cbf24fa81f474161ee403f503c2fe60a79454e625069c5f05457fa894d4f895b",
+  "upstream_issue": 254,
+  "overlap_prs": {
+    "169": {
+      "state": "open",
+      "head": "0596edb8a7e2f23206636e60dcbd6f782c8770ed"
+    },
+    "225": {
+      "state": "open",
+      "head": "e2431350063c08a3cc2b4cc2d65efd7ffcdd62ec"
+    }
+  },
+  "upstream_pr_created": false,
+  "authorized": "commit/push to user fork and publish this fork-only handoff; no upstream PR/outreach/live payments/production changes",
+  "reviewer": "/root/ows_independent_review",
+  "reviewer_verdict": "no actionable source defect; corrected concurrency wording in PR draft",
+  "continuation": "recreate validation on new macOS machine; preserve bounded unavailable-state scope; publication to upstream requires later authorization"
+}

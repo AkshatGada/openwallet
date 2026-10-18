@@ -1,0 +1,20 @@
+Independent reviewer: /root/ows_independent_review
+Admission: reviewer directly inspected six dirty tracked files, String-to-Option field, shared runtime constructor, Unix shell integration tests and migration docs before reporting itself active.
+Reviewed diff SHA-256: cbf24fa81f474161ee403f503c2fe60a79454e625069c5f05457fa894d4f895b
+Verdict: No actionable correctness or security defect found in the six-file diff reviewed. No edits made.
+
+Findings / review notes:
+- ows/crates/ows-core/src/policy.rs:112: intentional breaking public Rust API. JSON string consumers also need migration. Maintainer agreement on release treatment remains necessary.
+- ows/crates/ows-lib/src/key_ops.rs:338: shared API-token path supplies unavailable accounting before evaluation/decryption; sign_and_send broadcasts only afterward. No accounting writes, counters, reservations, or concurrency guarantee introduced.
+- docs/03-policy-engine.md:270: accurately distinguishes availability from cumulative accounting and documents coercion-to-zero risk.
+
+Independently executed by reviewer:
+- Exact documented Python guard denied five missing/null/malformed-container cases. Legacy string "0" and malformed nonnull strings passed, consistent with the documented availability-only purpose.
+- Python int(None) raises TypeError; a default-zero fallback can produce zero.
+- Node v25.5.0: Number(null) is 0; null || "0" is "0"; BigInt(null) throws TypeError.
+- git diff --check passed.
+- Read added serialization/signing/denial tests, existing executable failure tests, and traced signing entry points in actual source.
+
+Reviewer limitations: did not independently compile Rust, bindings, pinned 1.94.0 or Linux; did not recheck upstream. Those gates were assigned to the parent and are recorded separately. Supports only the bounded unavailable-state change, not complete #254 remediation or a guarantee that every policy denies.
+
+Follow-up PR-draft review: identified one wording overstatement, "eight concurrent". The scripts actually execute two batches of four concurrent processes. Parent corrected the draft to "eight allowed offline signatures and eight denials in fresh processes, with four concurrent processes per batch." Other source/evidence/limitations claims were supported by the logs inspected. No source changes requested.

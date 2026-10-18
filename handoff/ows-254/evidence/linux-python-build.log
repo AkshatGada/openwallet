@@ -1,0 +1,34 @@
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.12 at /opt/ows-venv/bin/python
+🔗 Found pyo3 bindings
+   Compiling rustls v0.23.40
+   Compiling target-lexicon v0.13.5
+   Compiling memoffset v0.9.1
+   Compiling indoc v2.0.7
+   Compiling unindent v0.2.4
+   Compiling pyo3-build-config v0.24.2
+   Compiling pyo3-macros-backend v0.24.2
+   Compiling pyo3-ffi v0.24.2
+   Compiling pyo3 v0.24.2
+   Compiling tokio-rustls v0.26.4
+   Compiling hyper-rustls v0.27.9
+   Compiling reqwest v0.12.28
+   Compiling pyo3-macros v0.24.2
+   Compiling midnight-base-crypto v1.0.0
+   Compiling ows-core v1.4.3 (/work/ows/crates/ows-core)
+   Compiling midnight-storage-core v1.2.0
+   Compiling midnight-transient-crypto v2.1.0
+   Compiling midnight-storage v2.0.1
+   Compiling midnight-coin-structure v2.0.1
+   Compiling midnight-onchain-state v3.0.0
+   Compiling midnight-onchain-vm v3.1.0
+   Compiling midnight-onchain-runtime v3.1.0
+   Compiling midnight-zswap v8.1.0
+   Compiling midnight-ledger v8.1.0
+   Compiling ows-signer v1.4.3 (/work/ows/crates/ows-signer)
+   Compiling ows-lib v1.4.3 (/work/ows/crates/ows-lib)
+   Compiling ows-python v1.4.3 (/work/bindings/python)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 19.10s
+📦 Built wheel for CPython 3.12 to /tmp/.tmpzO9G0O/open_wallet_standard-1.4.3-cp312-cp312-linux_aarch64.whl
+✏️ Setting installed package as editable
+🛠 Installed open-wallet-standard-1.4.3

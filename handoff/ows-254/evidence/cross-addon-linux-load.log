@@ -1,0 +1,2 @@
+GLIBC_2.17
+PASS: Node native null contract; 4 signing operations deny; 8 allowed signatures and 8 denials in fresh processes, 4 concurrent per batch; coercion caveat verified. No cumulative ledger claimed.
