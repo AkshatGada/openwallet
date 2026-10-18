@@ -335,7 +335,7 @@ pub fn enforce_policies_and_decrypt_key(
         api_key_id: key_file.id.clone(),
         request_type,
         transaction,
-        spending: noop_spending_context(&date),
+        spending: ows_core::policy::SpendingContext::unavailable(date),
         timestamp: now.to_rfc3339(),
         typed_data,
     };
@@ -362,13 +362,6 @@ fn parse_domain_chain_id(v: &serde_json::Value) -> Option<u64> {
     v.as_str()
         .and_then(|s| s.parse::<u64>().ok())
         .or_else(|| v.as_u64())
-}
-
-fn noop_spending_context(date: &str) -> ows_core::policy::SpendingContext {
-    ows_core::policy::SpendingContext {
-        daily_total: "0".to_string(),
-        date: date.to_string(),
-    }
 }
 
 fn check_expiry(key_file: &ApiKeyFile) -> Result<(), OwsLibError> {
@@ -462,6 +455,167 @@ mod tests {
         };
         policy_store::save_policy(&policy, Some(vault)).unwrap();
         policy.id
+    }
+
+    #[cfg(unix)]
+    fn setup_spending_policy(vault: &Path, allow: bool) -> (String, std::path::PathBuf) {
+        use std::os::unix::fs::PermissionsExt;
+
+        let script = vault.join("spending-policy.sh");
+        // Capture each complete context without recording credentials or wallet secrets.
+        let verdict = if allow {
+            r#"printf '%s\n' '{"allow":true}'"#
+        } else {
+            // A policy that needs cumulative accounting must deny on null. Unexpected
+            // input exits nonzero, which the engine must also treat as a denial.
+            r#"case "$context" in
+  *'"daily_total":null'*) printf '%s\n' '{"allow":false,"reason":"Cumulative spending accounting unavailable"}' ;;
+  *) exit 1 ;;
+esac"#
+        };
+        std::fs::write(
+            &script,
+            format!(
+                "#!/bin/sh\ncontext=$(cat)\nprintf '%s\\n' \"$context\" >> \"$0.context\"\n{verdict}\n"
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let policy = ows_core::Policy {
+            id: "spending-policy".into(),
+            name: "Spending policy".into(),
+            version: 1,
+            created_at: "2026-03-22T10:00:00Z".into(),
+            rules: vec![],
+            executable: Some(script.to_str().unwrap().into()),
+            config: None,
+            action: PolicyAction::Deny,
+        };
+        policy_store::save_policy(&policy, Some(vault)).unwrap();
+        (policy.id, vault.join("spending-policy.sh.context"))
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn api_key_signing_exposes_unavailable_spending() {
+        let dir = tempfile::tempdir().unwrap();
+        let vault = dir.path();
+        let wallet_id = setup_test_wallet(vault, "pass");
+        let (policy_id, captured) = setup_spending_policy(vault, true);
+        let (token, _) = create_api_key(
+            "agent",
+            &[wallet_id],
+            &[policy_id],
+            "pass",
+            None,
+            Some(vault),
+        )
+        .unwrap();
+        let chain = ows_core::parse_chain("base").unwrap();
+        // These are offline signatures, not submissions or evidence of settled spend.
+        for _ in 0..2 {
+            sign_with_api_key(&token, "test-wallet", &chain, &[0; 32], None, Some(vault)).unwrap();
+        }
+        sign_message_with_api_key(
+            &token,
+            "test-wallet",
+            &chain,
+            b"hello",
+            None,
+            None,
+            Some(vault),
+        )
+        .unwrap();
+        sign_hash_with_api_key(
+            &token,
+            "test-wallet",
+            &chain,
+            b"preimage",
+            &[0; 32],
+            None,
+            Some(vault),
+        )
+        .unwrap();
+        sign_typed_data_with_api_key(
+            &token, "test-wallet", &chain,
+            r#"{"types":{"EIP712Domain":[],"Message":[{"name":"text","type":"string"}]},"primaryType":"Message","domain":{},"message":{"text":"hello"}}"#,
+            None, None, Some(vault),
+        ).unwrap();
+
+        let contexts = std::fs::read_to_string(captured).unwrap();
+        let contexts: Vec<serde_json::Value> = contexts
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect();
+        assert_eq!(contexts.len(), 5);
+        for (ctx, operation) in contexts.iter().zip([
+            "sign_transaction",
+            "sign_transaction",
+            "sign_message",
+            "sign_hash",
+            "sign_typed_data",
+        ]) {
+            assert_eq!(ctx["request_type"], operation);
+            assert_eq!(
+                ctx["spending"].get("daily_total"),
+                Some(&serde_json::Value::Null)
+            );
+            assert_eq!(
+                ctx["spending"]["date"],
+                ctx["timestamp"].as_str().unwrap()[..10]
+            );
+            assert!(ctx.get("token").is_none());
+            assert!(ctx.get("wallet_secrets").is_none());
+        }
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn cumulative_policy_denies_before_decryption_and_broadcast() {
+        let dir = tempfile::tempdir().unwrap();
+        let vault = dir.path();
+        let wallet_id = setup_test_wallet(vault, "pass");
+        let (policy_id, captured) = setup_spending_policy(vault, false);
+        let (token, mut key_file) = create_api_key(
+            "agent",
+            &[wallet_id],
+            &[policy_id],
+            "pass",
+            None,
+            Some(vault),
+        )
+        .unwrap();
+        // No decryptable secret: the denial must come from policy evaluation first.
+        key_file.wallet_secrets.clear();
+        key_store::save_api_key(&key_file, Some(vault)).unwrap();
+        let chain = ows_core::parse_chain("base").unwrap();
+        let results = [
+            sign_with_api_key(&token, "test-wallet", &chain, &[0; 32], None, Some(vault)).map(|_| ()),
+            sign_message_with_api_key(&token, "test-wallet", &chain, b"hello", None, None, Some(vault)).map(|_| ()),
+            sign_hash_with_api_key(&token, "test-wallet", &chain, b"preimage", &[0; 32], None, Some(vault)).map(|_| ()),
+            sign_typed_data_with_api_key(
+                &token, "test-wallet", &chain,
+                r#"{"types":{"EIP712Domain":[],"Message":[]},"primaryType":"Message","domain":{},"message":{}}"#,
+                None, None, Some(vault),
+            ).map(|_| ()),
+            crate::ops::sign_and_send(
+                "test-wallet", "base", &hex::encode([0; 32]), Some(&token), None,
+                Some("http://127.0.0.1:1"), Some(vault),
+            ).map(|_| ()),
+        ];
+        for result in results {
+            match result.unwrap_err() {
+                OwsLibError::Core(OwsError::PolicyDenied { policy_id, reason }) => {
+                    assert_eq!(policy_id, "spending-policy");
+                    assert_eq!(reason, "Cumulative spending accounting unavailable");
+                }
+                err => panic!("expected accounting denial before decryption: {err}"),
+            }
+        }
+        assert_eq!(
+            std::fs::read_to_string(captured).unwrap().lines().count(),
+            5
+        );
     }
 
     #[test]

@@ -802,9 +802,9 @@ integer. `TransactionEffect` lives in `ows-core` and is shared by every chain, s
 the type has to hold the widest smallest-unit any chain uses: lovelace fits an
 `i64` with room to spare, but wei overflows one above roughly 9.22 ETH, and a JSON
 integer above 2^53 does not survive `JSON.parse` in a policy written in
-JavaScript. A string has no ceiling in either place, and it matches the
-`String`-typed amounts already in the context (`spending.daily_total`, and the
-`value` field this replaced).
+JavaScript. A string has no ceiling in either place. This does not imply
+cumulative accounting: `spending.daily_total` is `null` because OWS has no
+spending ledger (see [accounting availability](03-policy-engine.md#spending-accounting-is-unavailable)).
 
 Consumers parse it themselves: `int(...)` in Python, `BigInt(...)` in JavaScript.
 The subtraction that produces it runs in `i128`, so a native-asset quantity at the

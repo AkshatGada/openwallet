@@ -58,7 +58,7 @@ The `CryptoEnvelope` struct is reused with a new KDF identifier:
 ### Key creation flow
 
 ```bash
-ows key create --name "claude-agent" --wallet agent-treasury --policy spending-limit
+ows key create --name "claude-agent" --wallet agent-treasury --policy base-only
 ```
 
 1. Owner enters wallet passphrase
@@ -108,7 +108,7 @@ Delete the API key file. The encrypted secret copy is gone. `SHA256(T)` matches 
 
 ## Declarative Policy Rules
 
-These rule types are evaluated in-process (microseconds, no subprocess). Per-transaction value caps, recipient allowlists, and cumulative daily spend are **not** implemented as declarative rules; use an **`executable`** policy (see below) if you need that level of control.
+These rule types are evaluated in-process (microseconds, no subprocess). Per-transaction value caps and recipient allowlists are **not** implemented as declarative rules; use an **`executable`** policy (see below) if you need that level of control. OWS does **not** maintain cumulative spending accounting. A cumulative limit requires independently verified accounting; `spending.daily_total` cannot enforce one (see below).
 
 ### `allowed_chains`
 
@@ -234,7 +234,7 @@ The base JSON object available to policy evaluation:
     "raw_hex": "84a400d9010281825820..."
   },
   "spending": {
-    "daily_total": "50000000000000000",
+    "daily_total": null,
     "date": "2026-03-22"
   },
   "timestamp": "2026-03-22T10:35:22Z"
@@ -248,10 +248,53 @@ The base JSON object available to policy evaluation:
 | `api_key_id` | string | yes | The ID of the API key making this request |
 | `request_type` | string | yes | Which operation is being authorized: `sign_transaction`, `sign_message`, `sign_hash`, or `sign_typed_data`. **Branch on this**, not on which optional fields are populated. |
 | `transaction` | object | no | The signing payload. Present for `sign_transaction`, `sign_message`, and `sign_hash`; omitted for `sign_typed_data`, which exposes its payload via `typed_data.raw_json` instead. See below. |
-| `spending` | object | yes | Lightweight spending metadata currently exposed by the engine |
+| `spending` | object | yes | Accounting availability; `daily_total` is currently always `null` |
 | `timestamp` | string | yes | ISO 8601 timestamp of the signing request |
 
 For executable policies, the engine injects `policy_config` into the JSON payload when the policy file includes a `config` object.
+
+### `spending`: accounting is unavailable
+
+`spending.daily_total` is always JSON `null` in the reference implementation.
+OWS has no cumulative ledger, asset/unit definition for this legacy scalar,
+or settlement reconciliation. `spending.date` is the signing request's UTC date
+(`YYYY-MM-DD`), **not** evidence of an accounting window or a fresh balance.
+A signature authorizes an operation; it does not prove submission or settlement.
+Even `sign_and_send` returning a transaction hash does not establish settled spend.
+
+Earlier releases emitted the literal string `"0"`. It was a placeholder, not a
+measured zero. The nonzero examples previously shown here were test fixtures.
+Neither value could enforce a cumulative limit. Rust consumers must now handle
+`Option<String>`; executable policies receive `null` instead of a decimal string.
+
+**Migration:** cumulative-limit policies must explicitly deny when accounting is
+unavailable. Do not coerce `null` to zero, use a default-zero fallback, or treat an
+empty `transaction.effects` list as proof of no outflow. For example, this guard
+denies on the current implementation and also denies if an older/malformed
+context omits the field:
+
+```python
+spending = ctx.get("spending")
+if not isinstance(spending, dict) or spending.get("daily_total") is None:
+    json.dump({"allow": False, "reason": "Cumulative spending accounting unavailable"}, sys.stdout)
+    sys.exit(0)
+```
+
+This is an availability guard, **not a complete cumulative-limit policy**. A
+nonnull legacy value is not verified accounting either. The engine cannot infer
+whether an arbitrary executable needs a ledger: a script that coerces missing
+data to zero and returns `allow: true` will still allow. Audit existing policies;
+the type change alone cannot make every script fail closed. Nonzero exits and
+invalid executable output continue to deny.
+
+An external accounting provider must define per-`(chain, asset)` amounts in each
+asset's smallest unit, wallet/API-key scope, UTC or rolling windows, freshness,
+and how authorization reservations, submissions, and confirmed settlement differ.
+It must coordinate concurrent signers atomically, persist reservations across
+restarts, reconcile failures/replacements/reorgs, and deny on missing or stale
+data. Avoid exposing secrets or unnecessary transaction history to a policy
+subprocess. None of those guarantees is supplied by this field, and simply
+incrementing a counter after signing would not supply them.
 
 ### `transaction` (optional)
 
@@ -316,7 +359,7 @@ All fields except `primary_type` and `raw_json` are optional (the EIP-712 domain
 ```
 
 ```json
-{ "allow": false, "reason": "Daily spending limit exceeded: 0.95 / 1.0 ETH" }
+{ "allow": false, "reason": "Cumulative spending accounting unavailable" }
 ```
 
 | Field | Type | Required | Description |

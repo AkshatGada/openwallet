@@ -100,13 +100,28 @@ pub struct TransactionContext {
     pub chain_extra: Option<serde_json::Value>,
 }
 
-/// Carried in [`PolicyContext`] for executable policies (opaque JSON). Not used by built-in rules.
+/// Accounting availability carried in [`PolicyContext`] for executable policies.
+/// Not used by built-in rules. The reference implementation has no cumulative
+/// ledger and always constructs this with [`SpendingContext::unavailable`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpendingContext {
-    /// Reserved for future use / custom tooling.
-    pub daily_total: String,
-    /// Date string (YYYY-MM-DD).
+    /// Legacy scalar retained for deserialization by custom tooling. No unit,
+    /// asset, scope, or settlement semantics are defined for it. `None` serializes
+    /// as JSON null (not an omitted field) and MUST NOT be treated as zero.
+    /// Earlier releases emitted a placeholder "0", not a measured total.
+    pub daily_total: Option<String>,
+    /// Signing request's UTC date (YYYY-MM-DD), not a verified accounting window.
     pub date: String,
+}
+
+impl SpendingContext {
+    /// No verified accounting is available. Signing is not evidence of settled spend.
+    pub fn unavailable(date: impl Into<String>) -> Self {
+        Self {
+            daily_total: None,
+            date: date.into(),
+        }
+    }
 }
 
 /// EIP-712 typed data context for policy evaluation.
@@ -162,6 +177,53 @@ impl PolicyResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn spending_unavailable_serializes_explicit_null() {
+        let context = SpendingContext::unavailable("2026-03-22");
+        let json = serde_json::to_value(&context).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({"daily_total": null, "date": "2026-03-22"})
+        );
+        let decoded: SpendingContext = serde_json::from_value(json).unwrap();
+        assert_eq!(decoded.daily_total, None);
+        assert_eq!(decoded.date, "2026-03-22");
+    }
+
+    #[test]
+    fn spending_missing_total_is_unavailable() {
+        let context: SpendingContext = serde_json::from_value(serde_json::json!({
+            "date": "2026-03-22"
+        }))
+        .unwrap();
+        assert_eq!(context.daily_total, None);
+        assert_eq!(
+            serde_json::to_value(context).unwrap().get("daily_total"),
+            Some(&serde_json::Value::Null)
+        );
+    }
+
+    #[test]
+    fn spending_legacy_strings_roundtrip_without_numeric_coercion() {
+        // Compatibility with custom tooling is not a claim of verified accounting.
+        for total in [
+            "0",
+            "50000000000000000",
+            "340282366920938463463374607431768211456",
+        ] {
+            let json = serde_json::json!({"daily_total": total, "date": "2026-03-22"});
+            let decoded: SpendingContext = serde_json::from_value(json.clone()).unwrap();
+            assert_eq!(decoded.daily_total.as_deref(), Some(total));
+            assert_eq!(serde_json::to_value(decoded).unwrap(), json);
+        }
+        assert!(
+            serde_json::from_value::<SpendingContext>(serde_json::json!({
+                "daily_total": 0, "date": "2026-03-22"
+            }))
+            .is_err()
+        );
+    }
 
     #[test]
     fn test_policy_rule_serde_allowed_chains() {
@@ -249,10 +311,7 @@ mod tests {
                 data: None,
                 chain_extra: None,
             }),
-            spending: SpendingContext {
-                daily_total: "50000000000000000".into(),
-                date: "2026-03-22".into(),
-            },
+            spending: SpendingContext::unavailable("2026-03-22"),
             timestamp: "2026-03-22T10:35:22Z".into(),
             typed_data: None,
         };
@@ -376,10 +435,7 @@ mod tests {
                 data: None,
                 chain_extra: None,
             }),
-            spending: SpendingContext {
-                daily_total: "0".into(),
-                date: "2026-03-30".into(),
-            },
+            spending: SpendingContext::unavailable("2026-03-30"),
             timestamp: "2026-03-30T12:00:00Z".into(),
             typed_data: None,
         };
@@ -396,10 +452,7 @@ mod tests {
             api_key_id: "k".into(),
             request_type: PolicyRequestType::SignTypedData,
             transaction: None,
-            spending: SpendingContext {
-                daily_total: "0".into(),
-                date: "2026-03-30".into(),
-            },
+            spending: SpendingContext::unavailable("2026-03-30"),
             timestamp: "2026-03-30T12:00:00Z".into(),
             typed_data: None,
         };

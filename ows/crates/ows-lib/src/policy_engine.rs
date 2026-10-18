@@ -248,10 +248,7 @@ mod tests {
                 data: None,
                 chain_extra: None,
             }),
-            spending: SpendingContext {
-                daily_total: "50000000000000000".to_string(), // 0.05 ETH already spent
-                date: "2026-03-22".to_string(),
-            },
+            spending: SpendingContext::unavailable("2026-03-22"),
             timestamp: "2026-03-22T10:35:22Z".to_string(),
             typed_data: None,
         }

@@ -63,8 +63,11 @@ All attached policies must allow (AND semantics):
 
 ## 4. Custom Executable Policies
 
-Use executables for spending limits, on-chain simulation, or external API calls.
+Use executables for per-transaction limits, on-chain simulation, or external API calls.
 The executable receives PolicyContext JSON on stdin and must write PolicyResult to stdout.
+OWS does not maintain a cumulative spending ledger. Policies requiring one must
+deny without independently verified accounting; see the
+[accounting availability and migration guidance](03-policy-engine.md#spending-accounting-is-unavailable).
 
 Minimal Python example — cap the ADA one transaction moves out of the wallet's own
 addresses:
@@ -112,7 +115,8 @@ Reference it in the policy file:
 | transaction.effects[].diff | [asset, amount] pairs; amount is a signed decimal string in the smallest unit |
 | transaction.chain_extra | Chain-specific detail effects cannot carry; present only when a chain fills it |
 | transaction.raw_hex | Raw unsigned payload hex |
-| spending.daily_total | Cumulative value signed today (wei) |
+| spending.daily_total | Always null: cumulative accounting is unavailable; never treat it as zero |
+| spending.date | UTC signing-request date, not a verified accounting window |
 | timestamp | ISO-8601 signing request time |
 
 `transaction.to` and `transaction.value` were documented here previously. Neither was
@@ -127,7 +131,7 @@ Test executable policies without real signing:
       "request_type": "sign_transaction",
       "transaction": {"raw_hex": "84a4",
         "effects": [{"address": "addr1qx2f...", "diff": [["lovelace", "-6000000"]]}]},
-      "spending": {"daily_total": "0", "date": "2026-01-01"},
+      "spending": {"daily_total": null, "date": "2026-01-01"},
       "timestamp": "2026-01-01T00:00:00Z"}' | python3 value-limit.py
 
 ## 7. Failure Semantics
