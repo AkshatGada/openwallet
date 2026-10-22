@@ -120,3 +120,41 @@ fn cli_can_protect_a_wallet_with_an_initially_empty_password() {
     assert_no_passwords(&output);
     assert!(ows_lib::export_wallet(&wallet.id, Some("new-test-password"), Some(&vault)).is_ok());
 }
+
+#[test]
+fn cli_respects_password_environment_precedence_and_legacy_fallback() {
+    for (password, ows, legacy, success) in [
+        ("old", None, Some("old"), true),
+        ("old", Some("old"), Some("wrong"), true),
+        ("old", Some("wrong"), Some("old"), false),
+        ("old", Some(""), Some("old"), false),
+        ("", Some(""), Some("wrong"), true),
+    ] {
+        let directory = tempfile::tempdir().unwrap();
+        let vault = directory.path().join(".ows");
+        let wallet =
+            ows_lib::create_wallet("cli-wallet", Some(12), Some(password), Some(&vault)).unwrap();
+        let path = vault.join("wallets").join(format!("{}.json", wallet.id));
+        let original = fs::read(&path).unwrap();
+        let new_password = "  café 🔒 密码  ";
+        let mut command = command(directory.path());
+        command
+            .args(["--wallet", "cli-wallet"])
+            .env("OWS_NEW_PASSPHRASE", new_password);
+        if let Some(value) = ows {
+            command.env("OWS_PASSPHRASE", value);
+        }
+        if let Some(value) = legacy {
+            command.env("LWS_PASSPHRASE", value);
+        }
+        let output = command.output().unwrap();
+        assert_eq!(output.status.success(), success);
+        assert!(!String::from_utf8_lossy(&output.stdout).contains(new_password));
+        assert!(!String::from_utf8_lossy(&output.stderr).contains(new_password));
+        if success {
+            assert!(ows_lib::export_wallet(&wallet.id, Some(new_password), Some(&vault)).is_ok());
+        } else {
+            assert_eq!(fs::read(path).unwrap(), original);
+        }
+    }
+}

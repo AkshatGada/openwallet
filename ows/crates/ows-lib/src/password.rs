@@ -278,6 +278,52 @@ mod tests {
     }
 
     #[test]
+    fn invalid_or_unsupported_envelopes_leave_wallet_bytes_unchanged() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = fixture(directory.path(), "old", KeyType::Mnemonic);
+        let original: serde_json::Value =
+            serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        for (pointer, value) in [
+            ("/crypto/cipher", serde_json::json!("unsupported")),
+            ("/crypto/kdf", serde_json::json!("unsupported")),
+            ("/crypto/cipherparams/iv", serde_json::json!("00")),
+            ("/crypto/cipherparams/iv", serde_json::json!("not-hex")),
+            ("/crypto/auth_tag", serde_json::json!("00")),
+            ("/crypto/ciphertext", serde_json::json!("not-hex")),
+            ("/crypto/kdfparams/n", serde_json::json!(3)),
+            ("/crypto/kdfparams/r", serde_json::json!(0)),
+            ("/crypto/kdfparams/p", serde_json::json!(0)),
+            ("/crypto/kdfparams/dklen", serde_json::json!(64)),
+            ("/crypto/kdfparams", serde_json::json!({})),
+        ] {
+            let mut document = original.clone();
+            *document.pointer_mut(pointer).unwrap() = value;
+            let bytes = serde_json::to_vec(&document).unwrap();
+            fs::write(&path, &bytes).unwrap();
+            assert!(
+                change_wallet_passphrase("fixture", "old", "new", Some(directory.path())).is_err(),
+                "accepted invalid envelope at {pointer}"
+            );
+            assert_eq!(fs::read(&path).unwrap(), bytes);
+        }
+        let mut document = original;
+        document["crypto"] = serde_json::to_value(
+            ows_signer::crypto::encrypt_with_hkdf(b"fixture", "ows_key_fixture").unwrap(),
+        )
+        .unwrap();
+        let bytes = serde_json::to_vec(&document).unwrap();
+        fs::write(&path, &bytes).unwrap();
+        assert!(change_wallet_passphrase(
+            "fixture",
+            "ows_key_fixture",
+            "new",
+            Some(directory.path())
+        )
+        .is_err());
+        assert_eq!(fs::read(path).unwrap(), bytes);
+    }
+
+    #[test]
     fn lock_contention_and_changed_snapshot_do_not_overwrite_wallet() {
         let directory = tempfile::tempdir().unwrap();
         let path = fixture(directory.path(), "old", KeyType::Mnemonic);
