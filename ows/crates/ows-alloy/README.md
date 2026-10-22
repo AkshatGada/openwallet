@@ -70,7 +70,9 @@ string, and the domain type schema is derived from Alloy's actual domain fields.
 This preserves the full 256-bit range across the two libraries' JSON
 decoders. Named fields and types remain available; policies must parse these
 integer encodings. Undeclared JSON message properties are not signed fields and
-are omitted during normalization.
+are omitted during normalization. Multidimensional arrays retain their nested
+shape. Domain-only requests (`primaryType: "EIP712Domain"`) sign only the domain
+separator, matching Alloy, and pass an empty message object to policies.
 
 The constructor's nonzero chain ID is the policy context for hashes/messages/
 typed data, and the initial transaction chain setting. Typed-data domain chain

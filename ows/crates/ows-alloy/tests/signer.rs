@@ -28,6 +28,10 @@ sol! {
         uint8[2] flags;
         bool approved;
     }
+    struct Matrix {
+        uint256[][] values;
+        Person[2][] people;
+    }
 }
 
 fn message() -> Message {
@@ -52,6 +56,88 @@ fn message() -> Message {
 
 fn domain() -> alloy_sol_types::Eip712Domain {
     eip712_domain! { name: "OWS test", version: "1", chain_id: 1, verifying_contract: CONTRACT, }
+}
+
+fn nested_data() -> TypedData {
+    serde_json::from_value(serde_json::json!({
+        "types": {
+            "Matrix": [{"name":"values", "type":"uint256[][]"}, {"name":"people", "type":"Person[2][]"}],
+            "Person": [{"name":"name", "type":"string"}, {"name":"wallet", "type":"address"}]
+        },
+        "domain": domain(), "primaryType": "Matrix",
+        "message": {
+            "values": [[U256::MAX.to_string(), "1"], [], ["2"]],
+            "people": [[{"name":"Alice", "wallet":CONTRACT}, {"name":"Bob", "wallet":Address::ZERO}]]
+        }
+    })).unwrap()
+}
+
+#[tokio::test]
+async fn multidimensional_integer_and_struct_arrays_match_alloy() {
+    let vault = tempfile::tempdir().unwrap();
+    let signer = fixture(vault.path(), OWNER);
+    let value = Matrix {
+        values: vec![vec![U256::MAX, U256::from(1)], vec![], vec![U256::from(2)]],
+        people: vec![[
+            Person {
+                name: "Alice".into(),
+                wallet: CONTRACT,
+            },
+            Person {
+                name: "Bob".into(),
+                wallet: Address::ZERO,
+            },
+        ]],
+    };
+    let domain = domain();
+    let expected = local().sign_typed_data_sync(&value, &domain).unwrap();
+    assert_eq!(
+        signer.sign_typed_data_sync(&value, &domain).unwrap(),
+        expected
+    );
+    assert_eq!(
+        signer.sign_typed_data(&value, &domain).await.unwrap(),
+        expected
+    );
+    let data = nested_data();
+    assert_eq!(
+        local().sign_dynamic_typed_data_sync(&data).unwrap(),
+        expected
+    );
+    assert_eq!(
+        signer.sign_dynamic_typed_data_sync(&data).unwrap(),
+        expected
+    );
+    assert_eq!(
+        signer.sign_dynamic_typed_data(&data).await.unwrap(),
+        expected
+    );
+}
+
+#[tokio::test]
+async fn domain_only_typed_data_matches_alloy_without_a_message() {
+    let vault = tempfile::tempdir().unwrap();
+    let signer = fixture(vault.path(), OWNER);
+    for domain in [
+        serde_json::json!({}),
+        serde_json::to_value(domain()).unwrap(),
+    ] {
+        let data: TypedData = serde_json::from_value(serde_json::json!({
+            "types": {}, "domain": domain, "primaryType": "EIP712Domain",
+            // These properties are unsigned and must not be coerced as a struct.
+            "message": {"unsigned": "ignored"}
+        }))
+        .unwrap();
+        let expected = local().sign_dynamic_typed_data_sync(&data).unwrap();
+        assert_eq!(
+            signer.sign_dynamic_typed_data_sync(&data).unwrap(),
+            expected
+        );
+        assert_eq!(
+            signer.sign_dynamic_typed_data(&data).await.unwrap(),
+            expected
+        );
+    }
 }
 
 fn fixture(vault: &Path, credential: &str) -> OwsSigner {
@@ -446,16 +532,32 @@ print(json.dumps({{"allow": not ({} and context["request_type"] == "sign_hash")}
             path,
             source.replace(
                 "print(json.dumps",
-                "import time\ntime.sleep(0.25)\nprint(json.dumps",
+                // Wait for the async test to release the policy. A bounded
+                // watchdog lets a regression fail instead of hanging forever.
+                r#"import time
+release = pathlib.Path(__file__).with_name('release')
+deadline = time.monotonic() + 10
+while not release.exists():
+    if time.monotonic() > deadline:
+        sys.exit(1)
+    time.sleep(0.01)
+print(json.dumps"#,
             ),
         )
         .unwrap();
         let task = tokio::spawn(async move { signer.sign_message(b"offline").await });
-        tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            while !vault.path().join("context.json").exists() {
+                tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .expect("policy did not start");
         assert!(
             !task.is_finished(),
             "blocking policy work stalled the single-thread runtime"
         );
+        std::fs::write(vault.path().join("release"), "continue").unwrap();
         task.await.unwrap().unwrap();
     }
 
@@ -491,6 +593,45 @@ print(json.dumps({{"allow": not ({} and context["request_type"] == "sign_hash")}
         let ctx = context(vault.path());
         assert_eq!(ctx["request_type"], "sign_transaction");
         assert_eq!(ctx["transaction"]["raw_hex"], hex::encode(bytes));
+    }
+
+    #[tokio::test]
+    async fn nested_arrays_and_domain_only_data_preserve_typed_policy_routing() {
+        let vault = tempfile::tempdir().unwrap();
+        // The policy rejects raw hashes, so a digest fallback would fail.
+        let (signer, _) = agent(vault.path(), true);
+        let data = nested_data();
+        let expected = local().sign_dynamic_typed_data_sync(&data).unwrap();
+        assert_eq!(
+            signer.sign_dynamic_typed_data(&data).await.unwrap(),
+            expected
+        );
+        let ctx = context(vault.path());
+        assert_eq!(ctx["request_type"], "sign_typed_data");
+        let raw: serde_json::Value =
+            serde_json::from_str(ctx["typed_data"]["raw_json"].as_str().unwrap()).unwrap();
+        assert_eq!(raw["message"]["people"][0][0]["name"], "Alice");
+        assert_eq!(
+            raw["message"]["values"][0][0],
+            format!("0x{}", "ff".repeat(32))
+        );
+        let data: TypedData = serde_json::from_value(serde_json::json!({
+            "types": {}, "domain": domain(), "primaryType": "EIP712Domain",
+            "message": {"unsigned": "ignored"}
+        }))
+        .unwrap();
+        let expected = local().sign_dynamic_typed_data_sync(&data).unwrap();
+        assert_eq!(
+            signer.sign_dynamic_typed_data(&data).await.unwrap(),
+            expected
+        );
+        let ctx = context(vault.path());
+        assert_eq!(ctx["request_type"], "sign_typed_data");
+        let raw: serde_json::Value =
+            serde_json::from_str(ctx["typed_data"]["raw_json"].as_str().unwrap()).unwrap();
+        assert_eq!(raw["primaryType"], "EIP712Domain");
+        assert_eq!(raw["domain"]["name"], "OWS test");
+        assert_eq!(raw["message"], serde_json::json!({}));
     }
 
     #[test]

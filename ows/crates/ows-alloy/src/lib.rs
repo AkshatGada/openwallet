@@ -224,7 +224,13 @@ impl SignerSync for OwsSigner {
         // OWS accepts full-width integer words; Alloy's quantity hex can have
         // odd digits and OWS decimal parsing is limited to 128 bits. Preserve
         // the full integer range with padded words, including signed values.
-        document["message"] = json_value(payload.coerce().map_err(Error::other)?, true)?;
+        document["message"] = if payload.primary_type == "EIP712Domain" {
+            // Alloy's domain-only requests do not sign the message at all.
+            // Omit unsigned fields from the policy payload as well.
+            serde_json::json!({})
+        } else {
+            json_value(payload.coerce().map_err(Error::other)?, true)?
+        };
         if let Some(chain_id) = payload.domain.chain_id {
             document["domain"]["chainId"] = chain_id.to_string().into();
         }
